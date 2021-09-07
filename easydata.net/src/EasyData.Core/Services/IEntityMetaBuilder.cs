@@ -20,7 +20,7 @@ namespace EasyData.Services
         string DisplayNamePlural { get; }
 
         /// <summary>
-        /// Define to show the field or not.
+        /// Define wether the entity is enabled.
         /// </summary>
         bool? Enabled { get; }
 

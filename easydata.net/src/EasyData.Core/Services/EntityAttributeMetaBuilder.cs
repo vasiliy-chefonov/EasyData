@@ -9,12 +9,12 @@ namespace EasyData.Services
     public class EntityAttributeMetaBuilder
     {
         /// <summary>
-        /// Define to show the field or not.
+        /// Define wether the attributed is enabled.
         /// </summary>
         public bool? IsEnabled { get; private set; }
 
         /// <summary>
-        /// Gets or sets the attribute's caption.
+        /// The attribute's caption.
         /// </summary>
         public string DisplayName { get; private set; }
 
@@ -29,7 +29,7 @@ namespace EasyData.Services
         public string Description { get; private set; }
 
         /// <summary>
-        /// Define whether the field is editable or not.
+        /// Define wether the attribute is editable.
         /// </summary>
         public bool? IsEditable { get; private set; }
 
@@ -39,32 +39,32 @@ namespace EasyData.Services
         public int? Index { get; private set; }
 
         /// <summary>
-        /// Define whether to show the field in lookup.
+        /// Define wether attribute is shown in LookUp editor.
         /// </summary>
         public bool? ShowInLookup { get; private set; }
 
         /// <summary>
-        /// Define whether to show the field on view.
+        /// Define whether attribute is visible in a view mode (in grid).
         /// </summary>
         public bool? ShowOnView { get; private set; }
 
         /// <summary>
-        /// Define whether to show the field on edit.
+        /// Define wether Attribute is visible during the edit.
         /// </summary>
         public bool? ShowOnEdit { get; private set; }
 
         /// <summary>
-        /// Define whether to show the field on create.
+        /// Define wether Attribute is visible during the creation.
         /// </summary>
         public bool? ShowOnCreate { get; private set; }
 
         /// <summary>
-        /// The default sorting order.
+        /// The sorting order.
         /// </summary>
         public int? Sorting { get; private set; }
 
         /// <summary>
-        /// Information about the attribute.
+        /// The property information.
         /// </summary>
         public PropertyInfo PropertyInfo { get; private set; }
 
@@ -75,7 +75,7 @@ namespace EasyData.Services
         }
 
         /// <summary>
-        /// Set availability for the field.
+        /// Set availability for the attribute.
         /// </summary>
         /// <param name="enabled">Enable or not.</param>
         /// <returns>Current instance of the class.</returns>
@@ -119,7 +119,7 @@ namespace EasyData.Services
         }
 
         /// <summary>
-        /// Set if the field is editable or not.
+        /// Set wether the attribute is editable or not.
         /// </summary>
         /// <param name="editable">Editable or not.</param>
         /// <returns>Current instance of the class.</returns>
@@ -133,7 +133,7 @@ namespace EasyData.Services
         /// Set the index of EntityAttr.
         /// </summary>
         /// <param name="index">Index to set.</param>
-        /// <returns></returns>
+        /// <returns>Current instance of the class.</returns>
         public EntityAttributeMetaBuilder SetIndex(int index)
         {
             Index = index;
@@ -141,7 +141,7 @@ namespace EasyData.Services
         }
 
         /// <summary>
-        /// Set if the field is shown in lookup.
+        /// Set wether attribute is shown in LookUp editor.
         /// </summary>
         /// <param name="showInLookup">To show or not.</param>
         /// <returns>Current instance of the class.</returns>
@@ -152,7 +152,7 @@ namespace EasyData.Services
         }
 
         /// <summary>
-        /// Set if the field is shown on view or not.
+        /// Set wether attribute is shown on view.
         /// </summary>
         /// <param name="showOnView">To show or not.</param>
         /// <returns>Current instance of the class.</returns>
@@ -163,7 +163,7 @@ namespace EasyData.Services
         }
 
         /// <summary>
-        /// Set if the field is shown on edit or not.
+        /// Set wether attribute is shown on edit.
         /// </summary>
         /// <param name="showOnEdit">To show or not.</param>
         /// <returns>Current instance of the class.</returns>
@@ -174,7 +174,7 @@ namespace EasyData.Services
         }
 
         /// <summary>
-        /// Set if the field is shown on create or not.
+        /// Set wether attribute is shown on create.
         /// </summary>
         /// <param name="showOnCreate">To show or not.</param>
         /// <returns>Current instance of the class.</returns>

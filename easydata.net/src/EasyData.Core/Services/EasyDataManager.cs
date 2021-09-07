@@ -53,21 +53,21 @@ namespace EasyData.Services
                 await LoadModelAsync(modelId, ct);
             }
 
+            UpdateModelMetaWithOptions();
             return Model;
         }
 
 
         public virtual Task LoadModelAsync(string modelId, CancellationToken ct = default)
         {
-            UpdateMetaWithOptions();
             Options.ModelTuner?.Invoke(Model);
             return Task.CompletedTask;
         }
 
         /// <summary>
-        /// Update Meta data with properties from options.
+        /// Update Model meta data with the properties from options.
         /// </summary>
-        private void UpdateMetaWithOptions()
+        private void UpdateModelMetaWithOptions()
         {
             foreach (var metaBuilder in Options.EntityMetaBuilders)
             {
@@ -77,6 +77,7 @@ namespace EasyData.Services
 
                     if (metaBuilder.ClrType.Equals(entity.ClrType))
                     {
+                        // Remove from list if the entity is disabled in options
                         if (!metaBuilder.Enabled ?? true)
                         {
                             Model.EntityRoot.SubEntities.RemoveAt(i);
@@ -92,30 +93,30 @@ namespace EasyData.Services
         /// <summary>
         /// Update single entity meta information.
         /// </summary>
-        /// <param name="metaFrom">Meta builder to copy from.</param>
-        /// <param name="metaTo">Meta Entity to copy to.</param>
-        private void UpdateEntityMeta(IEntityMetaBuilder metaFrom, MetaEntity metaTo)
+        /// <param name="metaUpdateSource">Meta builder update source.</param>
+        /// <param name="metaToUpdate">Meta Entity to update.</param>
+        private void UpdateEntityMeta(IEntityMetaBuilder metaUpdateSource, MetaEntity metaToUpdate)
         {
-            metaTo.Description = metaFrom.Description ?? metaTo.Description;
-            metaTo.Name = metaFrom.DisplayName ?? metaTo.Name;
-            metaTo.NamePlural = metaFrom.DisplayNamePlural ?? metaTo.NamePlural;
+            metaToUpdate.Description = metaUpdateSource.Description ?? metaToUpdate.Description;
+            metaToUpdate.Name = metaUpdateSource.DisplayName ?? metaToUpdate.Name;
+            metaToUpdate.NamePlural = metaUpdateSource.DisplayNamePlural ?? metaToUpdate.NamePlural;
 
             // Update entity meta attributes
-            foreach (var attributeBuilder in metaFrom.AttributeMetaBuilders)
+            foreach (var attributeBuilder in metaUpdateSource.AttributeMetaBuilders)
             {
-                for (int i = metaTo.Attributes.Count - 1; i >= 0; i--)
+                for (int i = metaToUpdate.Attributes.Count - 1; i >= 0; i--)
                 {
-                    var attribute = metaTo.Attributes[i];
+                    var attribute = metaToUpdate.Attributes[i];
 
-                    if (attributeBuilder.PropertyInfo.Name.Equals(attribute.PropInfo.Name))
+                    if (attributeBuilder.PropertyInfo.Name.Equals(attribute.PropName))
                     {
                         if (!attributeBuilder.IsEnabled ?? true)
                         {
-                            metaTo.Attributes.RemoveAt(i);
+                            metaToUpdate.Attributes.RemoveAt(i);
                         }
 
                         UdpateEntityAttributeMeta(attributeBuilder, attribute);
-                        metaTo.Attributes[i] = attribute;
+                        metaToUpdate.Attributes[i] = attribute;
                         break;
                     }
                 }
@@ -125,20 +126,20 @@ namespace EasyData.Services
         /// <summary>
         /// Update sungle entity attribute meta information.
         /// </summary>
-        /// <param name="metaFrom">Meta builder to copy from</param>
-        /// <param name="metaTo">Meta Entity Attribute to copy to.</param>
-        private void UdpateEntityAttributeMeta(EntityAttributeMetaBuilder metaFrom, MetaEntityAttr metaTo)
+        /// <param name="metaUpdateSource">Meta builder update source.</param>
+        /// <param name="metaToUpdate">Meta Entity Attribute to update.</param>
+        private void UdpateEntityAttributeMeta(EntityAttributeMetaBuilder metaUpdateSource, MetaEntityAttr metaToUpdate)
         {
-            metaTo.Caption = metaFrom.DisplayName ?? metaTo.Caption;
-            metaTo.DisplayFormat = metaFrom.DisplayFormat ?? metaTo.DisplayFormat;
-            metaTo.Description = metaFrom.Description ?? metaTo.Description;
-            metaTo.IsEditable = metaFrom.IsEditable ?? metaTo.IsEditable;
-            metaTo.Index = metaFrom.Index ?? metaTo.Index;
-            metaTo.ShowInLookup = metaFrom.ShowInLookup ?? metaTo.ShowInLookup;
-            metaTo.ShowOnView = metaFrom.ShowOnView ?? metaTo.ShowOnView;
-            metaTo.ShowOnEdit = metaFrom.ShowOnEdit ?? metaTo.ShowOnEdit;
-            metaTo.ShowOnCreate = metaFrom.ShowOnCreate ?? metaTo.ShowOnCreate;
-            metaTo.Sorting = metaFrom.Sorting ?? metaTo.Sorting;
+            metaToUpdate.Caption = metaUpdateSource.DisplayName ?? metaToUpdate.Caption;
+            metaToUpdate.DisplayFormat = metaUpdateSource.DisplayFormat ?? metaToUpdate.DisplayFormat;
+            metaToUpdate.Description = metaUpdateSource.Description ?? metaToUpdate.Description;
+            metaToUpdate.IsEditable = metaUpdateSource.IsEditable ?? metaToUpdate.IsEditable;
+            metaToUpdate.Index = metaUpdateSource.Index ?? metaToUpdate.Index;
+            metaToUpdate.ShowInLookup = metaUpdateSource.ShowInLookup ?? metaToUpdate.ShowInLookup;
+            metaToUpdate.ShowOnView = metaUpdateSource.ShowOnView ?? metaToUpdate.ShowOnView;
+            metaToUpdate.ShowOnEdit = metaUpdateSource.ShowOnEdit ?? metaToUpdate.ShowOnEdit;
+            metaToUpdate.ShowOnCreate = metaUpdateSource.ShowOnCreate ?? metaToUpdate.ShowOnCreate;
+            metaToUpdate.Sorting = metaUpdateSource.Sorting ?? metaToUpdate.Sorting;
         }
 
         public abstract Task<EasyDataResultSet> GetEntitiesAsync(
