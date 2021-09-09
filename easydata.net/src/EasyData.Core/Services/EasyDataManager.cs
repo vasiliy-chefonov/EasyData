@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,7 +37,7 @@ namespace EasyData.Services
 
         protected readonly EasyDataOptions Options;
 
-        protected MetaData Model { get; private set; } = new MetaData();
+        protected ConcurrentDictionary<string, MetaData> MetadataSchemas { get; private set; } = new ConcurrentDictionary<string, MetaData>();
 
 
         public EasyDataManager(IServiceProvider services, EasyDataOptions options)
@@ -46,77 +48,93 @@ namespace EasyData.Services
 
         public async Task<MetaData> GetModelAsync(string modelId, CancellationToken ct = default)
         {
-            if (Model.Id != modelId)
-            {
-                //TODO: Try to load model from cache
+            if (!MetadataSchemas.TryGetValue(modelId, out var model)) {
+                model = await InitializeMetadataSchemaAsync(modelId, ct);
 
-                await LoadModelAsync(modelId, ct);
+                // See if there was a model created with specified id (maybe from a parallel thread).
+                if (!MetadataSchemas.TryAdd(modelId, model)) {
+                    // Discard the created model, use the one from dictionary.
+                    model = MetadataSchemas[modelId];
+                }
             }
 
-            UpdateModelMetaWithOptions();
-            return Model;
+            return model;
         }
 
-
-        public virtual Task LoadModelAsync(string modelId, CancellationToken ct = default)
+        /// <summary>
+        /// Create a new model instance.
+        /// </summary>
+        /// <param name="modelId">Id of the model.</param>
+        /// <param name="ct">Cancellation token.</param>
+        /// <returns>Metadata schema.</returns>
+        protected async Task<MetaData> InitializeMetadataSchemaAsync(string modelId, CancellationToken ct = default)
         {
-            Options.ModelTuner?.Invoke(Model);
+            var model = new MetaData()
+            {
+                Id = modelId
+            };
+            await LoadModelAsync(model, ct);
+            UpdateModelMetaWithOptions(model);
+            return model;
+        }
+
+        /// <summary>
+        /// Load metadata with properties.
+        /// </summary>
+        /// <param name="metaData">Metadata object.</param>
+        /// <param name="ct">Cancellation token.</param>
+        public virtual Task LoadModelAsync(MetaData metaData, CancellationToken ct = default)
+        {
+            Options.ModelTuner?.Invoke(metaData);
             return Task.CompletedTask;
         }
 
         /// <summary>
         /// Update Model meta data with the properties from options.
         /// </summary>
-        private void UpdateModelMetaWithOptions()
+        private void UpdateModelMetaWithOptions(MetaData metaData)
         {
-            foreach (var metaBuilder in Options.EntityMetaBuilders)
-            {
-                for (int i = Model.EntityRoot.SubEntities.Count - 1; i >= 0; i--)
-                {
-                    var entity = Model.EntityRoot.SubEntities[i];
-
-                    if (metaBuilder.ClrType.Equals(entity.ClrType))
-                    {
-                        // Remove from list if the entity is disabled in options
-                        if (!metaBuilder.Enabled ?? true)
-                        {
-                            Model.EntityRoot.SubEntities.RemoveAt(i);
-                        }
-                        UpdateEntityMeta(metaBuilder, entity);
-                        Model.EntityRoot.SubEntities[i] = entity;
-                        break;
-                    }
+            foreach (var metaBuilder in Options.EntityMetaBuilders) {
+                var entity = metaData.EntityRoot.SubEntities.FirstOrDefault(e => metaBuilder.ClrType.Equals(e.ClrType));
+                if (entity == null) {
+                    // TODO: should we throw an exception?
+                    continue;
                 }
+
+                // Remove from list if the entity is disabled in options
+                if (metaBuilder.Enabled == false) {
+                    metaData.EntityRoot.SubEntities.Remove(entity);
+                    continue;
+                }
+
+                UpdateEntityMeta(metaBuilder, entity);
             }
         }
 
         /// <summary>
         /// Update single entity meta information.
         /// </summary>
-        /// <param name="metaUpdateSource">Meta builder update source.</param>
-        /// <param name="metaToUpdate">Meta Entity to update.</param>
-        private void UpdateEntityMeta(IEntityMetaBuilder metaUpdateSource, MetaEntity metaToUpdate)
+        /// <param name="updateSource">Meta builder update source.</param>
+        /// <param name="updateTarget">Meta Entity to update.</param>
+        private static void UpdateEntityMeta(IEntityMetaBuilder updateSource, MetaEntity updateTarget)
         {
-            metaToUpdate.Description = metaUpdateSource.Description ?? metaToUpdate.Description;
-            metaToUpdate.Name = metaUpdateSource.DisplayName ?? metaToUpdate.Name;
-            metaToUpdate.NamePlural = metaUpdateSource.DisplayNamePlural ?? metaToUpdate.NamePlural;
+            updateTarget.Description = updateSource.Description ?? updateTarget.Description;
+            updateTarget.Name = updateSource.DisplayName ?? updateTarget.Name;
+            updateTarget.NamePlural = updateSource.DisplayNamePlural ?? updateTarget.NamePlural;
 
             // Update entity meta attributes
-            foreach (var attributeBuilder in metaUpdateSource.AttributeMetaBuilders)
-            {
-                for (int i = metaToUpdate.Attributes.Count - 1; i >= 0; i--)
-                {
-                    var attribute = metaToUpdate.Attributes[i];
+            foreach (var attributeBuilder in updateSource.AttributeMetaBuilders) {
+                // TODO: attributes
+                for (int i = updateTarget.Attributes.Count - 1; i >= 0; i--) {
+                    var attribute = updateTarget.Attributes[i];
 
-                    if (attributeBuilder.PropertyInfo.Name.Equals(attribute.PropName))
-                    {
-                        if (!attributeBuilder.IsEnabled ?? true)
-                        {
-                            metaToUpdate.Attributes.RemoveAt(i);
+                    if (attributeBuilder.PropertyInfo.Name.Equals(attribute.PropName)) {
+                        if (!attributeBuilder.IsEnabled ?? true) {
+                            updateTarget.Attributes.RemoveAt(i);
                         }
 
                         UdpateEntityAttributeMeta(attributeBuilder, attribute);
-                        metaToUpdate.Attributes[i] = attribute;
+                        updateTarget.Attributes[i] = attribute;
                         break;
                     }
                 }
@@ -128,7 +146,7 @@ namespace EasyData.Services
         /// </summary>
         /// <param name="metaUpdateSource">Meta builder update source.</param>
         /// <param name="metaToUpdate">Meta Entity Attribute to update.</param>
-        private void UdpateEntityAttributeMeta(EntityAttributeMetaBuilder metaUpdateSource, MetaEntityAttr metaToUpdate)
+        private static void UdpateEntityAttributeMeta(EntityAttributeMetaBuilder metaUpdateSource, MetaEntityAttr metaToUpdate)
         {
             metaToUpdate.Caption = metaUpdateSource.DisplayName ?? metaToUpdate.Caption;
             metaToUpdate.DisplayFormat = metaUpdateSource.DisplayFormat ?? metaToUpdate.DisplayFormat;

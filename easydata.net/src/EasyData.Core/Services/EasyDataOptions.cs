@@ -19,12 +19,6 @@ namespace EasyData.Services
         protected readonly Dictionary<string, MetaEntity> TableEntity = new Dictionary<string, MetaEntity>();
 
         /// <summary>
-        /// The metadata of entities and their relations.
-        /// </summary>
-        protected MetaData Model { get; private set; } = new MetaData();
-
-
-        /// <summary>
         /// Defines the function which creates and returns an instance of EasyQuery manager. 
         /// The manager defines all basic operations with the models and queries: creating, loading, saving and query building itself.
         /// </summary>
@@ -117,7 +111,7 @@ namespace EasyData.Services
         /// <summary>
         /// Entity meta builders.
         /// </summary>
-        public List<IEntityMetaBuilder> EntityMetaBuilders => entityMetaBuilders;
+        public IEnumerable<IEntityMetaBuilder> EntityMetaBuilders => entityMetaBuilders;
 
         private List<IEntityMetaBuilder> entityMetaBuilders = new List<IEntityMetaBuilder>();
 

@@ -23,7 +23,7 @@ namespace EasyData
         public MetaEntity Parent { get; set; }
 
         private string _caption;
-        public string Caption { 
+        public string Caption {
             get => _caption ?? Expression?.GetSecondPart('.');
             set => _caption = value;
         }
@@ -43,9 +43,9 @@ namespace EasyData
             }
             set {
                 Kind = value ? EntityAttrKind.Virtual : EntityAttrKind.Data;
-            } 
+            }
         }
-        
+
     }
 
     /// <summary>
@@ -56,10 +56,10 @@ namespace EasyData
         /// <summary>
         /// Default options
         /// </summary>
-        public static readonly BitOptions Defaults = Entities 
-            | Description 
+        public static readonly BitOptions Defaults = Entities
+            | Description
             | Editors
-            | CustomInfo 
+            | CustomInfo
             | KeepCurrent;
 
         public const ulong Editors = 4;
@@ -260,7 +260,7 @@ namespace EasyData
             if (!string.IsNullOrEmpty(desc.Id)) {
                 attr.Id = desc.Id;
             }
-            else if (!string.IsNullOrEmpty(desc.Expression)) { 
+            else if (!string.IsNullOrEmpty(desc.Expression)) {
                 attr.Id = DataUtils.ComposeKey(desc.Parent?.Id, desc.Expression);
             }
 
@@ -272,7 +272,8 @@ namespace EasyData
             return attr;
         }
 
-        protected virtual void ValidateEntityAttrDesc(MetaEntityAttrDescriptor desc) {
+        protected virtual void ValidateEntityAttrDesc(MetaEntityAttrDescriptor desc)
+        {
             if (desc == null)
                 throw new ArgumentNullException(nameof(desc));
 
@@ -523,6 +524,8 @@ namespace EasyData
 
         #region JSON Serialization
 
+        // TODO: move to a separate class.
+
         /// <summary>
         /// Saves the data model to a file in JSON format.
         /// </summary>
@@ -566,8 +569,7 @@ namespace EasyData
         public async Task SaveToJsonFileAsync(string filePath, BitOptions options, CancellationToken ct = default)
         {
             using (var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write,
-                           FileShare.None, 4096, true))
-            {
+                           FileShare.None, 4096, true)) {
                 await SaveToJsonStreamAsync(stream, options.With(MetaDataReadWriteOptions.HumanReadable), ct).ConfigureAwait(false);
             }
         }
@@ -759,7 +761,7 @@ namespace EasyData
         public async Task LoadFromJsonFileAsync(string filePath, BitOptions options, CancellationToken ct = default)
         {
             FilePath = filePath;
-            using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, 
+            using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read,
                 FileShare.Read, 4096, true)) {
                 await LoadFromJsonStreamAsync(stream, options, ct).ConfigureAwait(false);
             }
@@ -889,7 +891,7 @@ namespace EasyData
             if (options.Contains(MetaDataReadWriteOptions.CustomInfo)) {
                 await writer.WritePropertyNameAsync("cstinf", ct).ConfigureAwait(false);
                 await writer.WriteValueAsync(CustomInfo.ToString(), ct).ConfigureAwait(false);
-            }          
+            }
         }
 
         /// <summary>
@@ -966,15 +968,14 @@ namespace EasyData
         public async Task ReadFromJsonAsync(JsonReader reader, BitOptions options, CancellationToken ct = default)
         {
             if (!await reader.ReadAsync(ct).ConfigureAwait(false)
-                || reader.TokenType != JsonToken.StartObject)
-            {
+                || reader.TokenType != JsonToken.StartObject) {
                 throw new BadJsonFormatException(reader.Path);
             }
 
             if (!options.Contains(MetaDataReadWriteOptions.KeepCurrent)) {
                 Clear();
             }
-           
+
             while (await reader.ReadAsync(ct)) {
                 if (reader.TokenType == JsonToken.PropertyName) {
                     string propName = reader.Value.ToString();
@@ -998,8 +999,7 @@ namespace EasyData
         /// <returns>Task.</returns>
         protected virtual async Task ReadOneModelPropFromJsonAsync(JsonReader reader, string propName, CancellationToken ct)
         {
-            switch (propName)
-            {
+            switch (propName) {
                 case "entroot":
                     await reader.ReadAsync(ct).ConfigureAwait(false); //readring start object
                     await EntityRoot.ReadFromJsonAsync(reader, ct).ConfigureAwait(false);
@@ -1047,15 +1047,13 @@ namespace EasyData
             }
 
             while ((await reader.ReadAsync(ct).ConfigureAwait(false))
-                && reader.TokenType != JsonToken.EndObject)
-            {
+                && reader.TokenType != JsonToken.EndObject) {
                 var formatType = reader.Value.ToString().StrToDataType();
 
                 await reader.ReadAsync(ct).ConfigureAwait(false);
                 if (reader.TokenType != JsonToken.StartArray) {
                     while ((await reader.ReadAsync(ct).ConfigureAwait(false))
-                        && reader.TokenType != JsonToken.EndArray)
-                    {
+                        && reader.TokenType != JsonToken.EndArray) {
                         var fmtObj = await JObject.ReadFromAsync(reader, ct).ConfigureAwait(false);
                         var name = fmtObj.Value<string>("name");
                         var format = fmtObj.Value<string>("format");

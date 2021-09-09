@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Builder
     public static class EasyDataEndpointRouteBuilderExtensions
     {
         public static IEndpointConventionBuilder MapEasyData(
-            this IEndpointRouteBuilder builder, 
+            this IEndpointRouteBuilder builder,
             Action<EasyDataOptions> optionsTuner = null)
         {
             return MapEasyData<EasyDataApiHandler>(builder, optionsTuner);
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Builder
 
 
         public static IEndpointConventionBuilder MapEasyData<THandler>(
-            this IEndpointRouteBuilder builder, 
+            this IEndpointRouteBuilder builder,
             Action<EasyDataOptions> optionsTuner = null) where THandler : EasyDataApiHandler
         {
             var options = new EasyDataOptions(builder.ServiceProvider);
