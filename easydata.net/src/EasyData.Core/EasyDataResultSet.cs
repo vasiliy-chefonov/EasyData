@@ -7,8 +7,8 @@ using Newtonsoft.Json;
 namespace EasyData
 {
 
-    public enum ColumnAlignment 
-    { 
+    public enum ColumnAlignment
+    {
         None,
         Left,
         Center,
@@ -31,6 +31,8 @@ namespace EasyData
 
         public string Label { get; set; }
 
+        public string Description { get; set; }
+
         public DataType DataType { get; set; }
 
         public string AttrId { get; set; }
@@ -47,16 +49,19 @@ namespace EasyData
     public class EasyDataCol
     {
         [JsonProperty("id")]
-        public string Id { get;  }
+        public string Id { get; }
 
         [JsonIgnore]
-        public int Index { get;  }
+        public int Index { get; }
 
         [JsonProperty("isAggr")]
-        public bool IsAggr { get;  }
+        public bool IsAggr { get; }
 
         [JsonProperty("label")]
         public string Label { get; set; }
+
+        [JsonProperty("description")]
+        public string Description { get; set; }
 
         [Obsolete("Use DataType instead")]
         [JsonIgnore]
@@ -85,6 +90,7 @@ namespace EasyData
             IsAggr = desc.IsAggr;
             OrginAttrId = desc.AttrId;
             Label = desc.Label;
+            Description = desc.Description;
             DataType = desc.DataType;
             DisplayFormat = desc.DisplayFormat;
             GroupFooterColumnTemplate = desc.GroupFooterColumnTemplate;
@@ -101,7 +107,8 @@ namespace EasyData
         }
     }
 
-    public interface IEasyDataResultSet {
+    public interface IEasyDataResultSet
+    {
         /// <summary>
         /// Gets columns
         /// </summary>
@@ -114,7 +121,7 @@ namespace EasyData
     }
 
 
-    public class EasyDataResultSet: IEasyDataResultSet
+    public class EasyDataResultSet : IEasyDataResultSet
     {
         [JsonProperty("cols")]
         public List<EasyDataCol> Cols { get; } = new List<EasyDataCol>();

@@ -23,6 +23,7 @@ export interface DataColumnDescriptor {
     dfmt?: string;
     gfct?: string;
     style?: DataColumnStyle;
+    description?: string;
 }
 
 export class DataColumn {
@@ -43,6 +44,8 @@ export class DataColumn {
 
     public style?: DataColumnStyle;
 
+    public description?: string;
+
     constructor(desc: DataColumnDescriptor) {
         if (!desc)
             throw Error("Options are required");
@@ -61,6 +64,7 @@ export class DataColumn {
         this.displayFormat = desc.dfmt;
         this.groupFooterColumnTemplate = desc.gfct;
         this.style = desc.style || {};
+        this.description = desc.description;
     }
 }
 
