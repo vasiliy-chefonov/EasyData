@@ -395,7 +395,7 @@ export class EasyGrid {
 
         if (column.description) {
             domel('div', colDiv)
-                .addClass("question-mark")
+                .addClass('question-mark')
                 .title(column.description);
         }
         

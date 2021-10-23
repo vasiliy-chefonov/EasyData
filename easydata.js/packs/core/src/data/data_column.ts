@@ -23,7 +23,7 @@ export interface DataColumnDescriptor {
     dfmt?: string;
     gfct?: string;
     style?: DataColumnStyle;
-    description?: string;
+    description: string | null;
 }
 
 export class DataColumn {
