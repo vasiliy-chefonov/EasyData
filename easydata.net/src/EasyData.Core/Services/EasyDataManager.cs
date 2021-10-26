@@ -96,6 +96,23 @@ namespace EasyData.Services
         }
 
         /// <summary>
+        /// Call validator from options for the entity.
+        /// </summary>
+        /// <param name="entity">Entity instance.</param>
+        public void Validate<T>(T entity)
+        {
+            var entityBuilder = Options.MetadataBuilder.EntityMetaBuilders
+                    .FirstOrDefault(e => e.ClrType == typeof(T));
+
+            if (entityBuilder == null) {
+                return;
+            }
+
+            var builder = (EntityMetaBuilder<T>) entityBuilder;
+            builder.Validator?.Invoke(entity);
+        }
+
+        /// <summary>
         /// Load metadata with properties.
         /// </summary>
         /// <param name="metaData">Metadata object.</param>

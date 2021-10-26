@@ -127,6 +127,7 @@ namespace EasyData.Services
             var entity = Activator.CreateInstance(entityType.ClrType);
 
             MapProperties(entity, props);
+            ValidateEntity(entity, entityType.ClrType);
 
             await DbContext.AddAsync(entity, ct);
             await DbContext.SaveChangesAsync(ct);
@@ -145,11 +146,34 @@ namespace EasyData.Services
             }
 
             MapProperties(entity, props);
+            ValidateEntity(entity, entityType.ClrType);
 
             DbContext.Update(entity);
             await DbContext.SaveChangesAsync(ct);
 
             return entity;
+        }
+
+        /// <summary>
+        /// Call entity validator.
+        /// </summary>
+        /// <param name="entity">Entity instance.</param>
+        /// <param name="entityType">Entity type.</param>
+        private void ValidateEntity(object entity, Type entityType)
+        {
+            var validator = typeof(EasyDataManager).GetMethod("Validate");
+            if (validator == null) {
+                return;
+            }
+
+            try {
+                validator.MakeGenericMethod(entityType).Invoke(this, new[] { entity });
+            }
+            catch (TargetInvocationException ex) {
+                if (ex.InnerException != null) {
+                    throw (ex.InnerException);
+                }
+            }
         }
 
         public override async Task DeleteEntityAsync(string modelId, string entityContainer, string keyStr, CancellationToken ct = default)
