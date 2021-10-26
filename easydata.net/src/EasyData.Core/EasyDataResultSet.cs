@@ -23,24 +23,48 @@ namespace EasyData
 
     public class EasyDataColDesc
     {
+        /// <summary>
+        /// Represents internal property id.
+        /// </summary>
         public string Id { get; set; }
 
+        /// <summary>
+        /// Index of property.
+        /// </summary>
         public int Index { get; set; }
 
         public bool IsAggr { get; set; }
 
+        /// <summary>
+        /// Name to use for this property in the UI.
+        /// </summary>
         public string Label { get; set; }
 
+        /// <summary>
+        /// Detailed description of the property.
+        /// </summary>
         public string Description { get; set; }
 
+        /// <summary>
+        /// The type of data represented by property.
+        /// </summary>
         public DataType DataType { get; set; }
 
+        /// <summary>
+        /// Represents internal property id.
+        /// </summary>
         public string AttrId { get; set; }
 
+        /// <summary>
+        /// The display format for the property.
+        /// </summary>
         public string DisplayFormat { get; set; }
 
         public string GroupFooterColumnTemplate { get; set; }
 
+        /// <summary>
+        /// The style of the property to display in UI.
+        /// </summary>
         public EasyDataColStyle Style { get; set; }
 
 
@@ -48,37 +72,64 @@ namespace EasyData
 
     public class EasyDataCol
     {
+        /// <summary>
+        /// Represents internal property id.
+        /// </summary>
         [JsonProperty("id")]
         public string Id { get; }
 
+        /// <summary>
+        /// Index of property.
+        /// </summary>
         [JsonIgnore]
         public int Index { get; }
 
         [JsonProperty("isAggr")]
         public bool IsAggr { get; }
 
+        /// <summary>
+        /// Name to use for this property in the UI.
+        /// </summary>
         [JsonProperty("label")]
         public string Label { get; set; }
 
+        /// <summary>
+        /// Detailed description of the property.
+        /// </summary>
         [JsonProperty("description")]
         public string Description { get; set; }
 
+        /// <summary>
+        /// The type of data represented by property.
+        /// </summary>
         [Obsolete("Use DataType instead")]
         [JsonIgnore]
         public DataType Type => DataType;
 
+        /// <summary>
+        /// The type of data represented by property.
+        /// </summary>
         [JsonProperty("type")]
         public DataType DataType { get; }
 
+        /// <summary>
+        /// Represents original internal property id.
+        /// </summary>
         [JsonProperty("originAttrId")]
         public string OrginAttrId { get; }
 
+        /// <summary>
+        /// The display format for the property.
+        /// </summary>
         [JsonProperty("dfmt")]
         public string DisplayFormat { get; set; }
 
         [JsonProperty("gfct")]
         public string GroupFooterColumnTemplate { get; set; }
 
+        /// <summary>
+        /// The style of the property to display in UI.
+        /// </summary>
         [JsonProperty("style")]
         public EasyDataColStyle Style { get; }
 

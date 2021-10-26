@@ -101,6 +101,7 @@ export class GridColumn {
         this._label = this.label;
     }
 
+    /** Get column description. */
     public get description(): string {
         return this._description;
     }
