@@ -35,7 +35,10 @@ namespace EasyData.Services
         /// <inheritdoc />
         public List<EntityPropertyMetaBuilder> PropertyMetaBuilders => _propertyMetaBuilders;
 
-        public Action<TEntity> Validator { get; private set; }
+        /// <summary>
+        /// Entity instance validator.
+        /// </summary>
+        public Validator<TEntity> Validator { get; private set; }
 
         /// <summary>
         /// Set entity display name.
@@ -85,8 +88,19 @@ namespace EasyData.Services
         /// Set entity validator.
         /// </summary>
         /// <param name="validator">Validating action.</param>
-        /// <returns></returns>
+        /// <returns>Current instance of the class.</returns>
         public EntityMetaBuilder<TEntity> SetValidator(Action<TEntity> validator)
+        {
+            Validator = new PredefinedValidator<TEntity>(validator);
+            return this;
+        }
+
+        /// <summary>
+        /// Set entity validator.
+        /// </summary>
+        /// <param name="validator"><see cref="Validator{T}" /> instance.</param>
+        /// <returns>Current instance of the class.</returns>
+        public EntityMetaBuilder<TEntity> SetValidator(Validator<TEntity> validator)
         {
             Validator = validator;
             return this;
