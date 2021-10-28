@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using EasyData.MetaDescriptors;
@@ -96,20 +95,20 @@ namespace EasyData.Services
         }
 
         /// <summary>
-        /// Call validator from options for the entity.
+        /// Validate entity.
         /// </summary>
         /// <param name="entity">Entity instance.</param>
-        public void Validate<T>(T entity)
+        /// <param name="exceptionMessages">Collection to receive failure messages.</param>
+        public bool TryValidate<T>(T entity, out IEnumerable<string> exceptionMessages)
         {
             var entityBuilder = Options.MetadataBuilder.EntityMetaBuilders
                     .FirstOrDefault(e => e.ClrType == typeof(T));
-
-            if (entityBuilder == null) {
-                return;
-            }
-
             var builder = (EntityMetaBuilder<T>) entityBuilder;
-            builder.Validator?.Invoke(entity);
+
+            var validationService = new EntityValidationService<T>(entity, Services);
+            var isValid = builder != null ? validationService.TryValidate(out exceptionMessages, builder.Validator) : validationService.TryValidate(out exceptionMessages);
+
+            return isValid;
         }
 
         /// <summary>

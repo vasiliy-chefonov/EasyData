@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -161,19 +162,20 @@ namespace EasyData.Services
         /// <param name="entityType">Entity type.</param>
         private void ValidateEntity(object entity, Type entityType)
         {
-            var validator = typeof(EasyDataManager).GetMethod("Validate");
+            var validator = typeof(EasyDataManager).GetMethod("TryValidate");
             if (validator == null) {
                 return;
             }
 
-            try {
-                validator.MakeGenericMethod(entityType).Invoke(this, new[] { entity });
+            var parameters = new[] {entity, null};
+            var isValid = (bool)validator.MakeGenericMethod(entityType).Invoke(this, parameters);
+
+            if (isValid) {
+                return;
             }
-            catch (TargetInvocationException ex) {
-                if (ex.InnerException != null) {
-                    throw (ex.InnerException);
-                }
-            }
+
+            var messages = (IEnumerable<string>)parameters[1];
+            throw new ValidationException(string.Join(", ", messages.ToArray()));
         }
 
         public override async Task DeleteEntityAsync(string modelId, string entityContainer, string keyStr, CancellationToken ct = default)
