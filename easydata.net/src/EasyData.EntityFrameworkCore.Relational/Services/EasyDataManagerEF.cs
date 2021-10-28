@@ -175,7 +175,7 @@ namespace EasyData.Services
             }
 
             var messages = (IEnumerable<string>)parameters[1];
-            throw new ValidationException(string.Join(", ", messages.ToArray()));
+            throw new ValidationException(string.Join("<br/>", messages.ToArray()));
         }
 
         public override async Task DeleteEntityAsync(string modelId, string entityContainer, string keyStr, CancellationToken ct = default)
