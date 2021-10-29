@@ -104,11 +104,8 @@ namespace EasyData.Services
             var entityBuilder = Options.MetadataBuilder.EntityMetaBuilders
                     .FirstOrDefault(e => e.ClrType == typeof(T));
             var builder = (EntityMetaBuilder<T>) entityBuilder;
-
             var validationService = new EntityValidationService<T>(entity, Services);
-            var isValid = builder != null ? validationService.TryValidate(out exceptionMessages, builder.Validator) : validationService.TryValidate(out exceptionMessages);
-
-            return isValid;
+            return validationService.TryValidate(out exceptionMessages, builder?.Validator);
         }
 
         /// <summary>

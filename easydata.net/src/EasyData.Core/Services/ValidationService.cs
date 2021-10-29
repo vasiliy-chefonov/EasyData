@@ -38,7 +38,12 @@ namespace EasyData.Services
                 validator?.Validate(_entity);
             }
             catch (Exception exception) {
-                _exceptionMessages.Add(exception.Message);
+                if (exception is AggregateException aggregateException) {
+                    _exceptionMessages.AddRange(aggregateException.InnerExceptions.Select(ae => ae.Message));
+                }
+                else {
+                    _exceptionMessages.Add(exception.Message);
+                }
             }
 
             // Validate IValidatable object
@@ -67,17 +72,15 @@ namespace EasyData.Services
             if (!validationErrors.Any()) {
                 return;
             }
-
-            foreach (var error in validationErrors) {
-                _exceptionMessages.Add(error.ErrorMessage);
-            }
+            
+            _exceptionMessages.AddRange(validationErrors.Select(error => error.ErrorMessage));
         }
 
         /// <summary>
         /// Validate with <see cref="Validator"/> annotations.
         /// </summary>
         /// <param name="validationContext">Validation context.</param>
-        private void ValidateWithEntityValidatorAnnotations( ValidationContext validationContext)
+        private void ValidateWithEntityValidatorAnnotations(ValidationContext validationContext)
         {
             var validationErrors = new List<ValidationResult>();
             var isValid = Validator.TryValidateObject(_entity, validationContext, validationErrors, true);

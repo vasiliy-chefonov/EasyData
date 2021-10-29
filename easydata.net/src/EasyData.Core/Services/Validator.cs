@@ -11,6 +11,7 @@ namespace EasyData.Services
     {
         /// <summary>
         /// Validate entity.
+        /// Throw an exception if there is a failure while validating.
         /// </summary>
         /// <param name="entity">Entity instance.</param>
         public abstract void Validate(T entity);

@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -13,6 +12,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Newtonsoft.Json.Linq;
 
 using EasyData.EntityFrameworkCore;
+using EasyData.Exceptions;
 using EasyData.MetaDescriptors;
 
 namespace EasyData.Services
@@ -162,7 +162,7 @@ namespace EasyData.Services
         /// <param name="entityType">Entity type.</param>
         private void ValidateEntity(object entity, Type entityType)
         {
-            var validator = typeof(EasyDataManager).GetMethod("TryValidate");
+            var validator = typeof(EasyDataManager).GetMethod(nameof(TryValidate));
             if (validator == null) {
                 return;
             }
@@ -175,7 +175,7 @@ namespace EasyData.Services
             }
 
             var messages = (IEnumerable<string>)parameters[1];
-            throw new ValidationException(string.Join("<br/>", messages.ToArray()));
+            throw new EntityValidationException(string.Join("<br/>", messages.ToArray()));
         }
 
         public override async Task DeleteEntityAsync(string modelId, string entityContainer, string keyStr, CancellationToken ct = default)
