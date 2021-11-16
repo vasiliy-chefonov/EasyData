@@ -164,43 +164,43 @@ namespace EasyData
         protected string expr = "";
 
         /// <summary>
-        /// Gets ot sets a value indicating wether Attribute is a primary key
+        /// Gets ot sets a value indicating whether this attribute is a primary key
         /// </summary>
         public bool IsPrimaryKey { get; set; } = false;
 
         /// <summary>
-        /// Gets ot sets a value indicating wether Attribute is a foreign key
+        /// Gets ot sets a value indicating whether this attribute is a foreign key
         /// </summary>
         public bool IsForeignKey { get; set; } = false;
 
         /// <summary>
-        /// Gets ot sets a value indicating wether Attribute is editable
+        /// Gets ot sets a value indicating whether this attribute is editable
         /// </summary>
         public bool IsEditable { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets a value indicating wether Attribute is shown in LookUp editor
+        /// Gets or sets a value indicating whether this attribute is shown in LookUp editor
         /// </summary>
         public bool ShowInLookup { get; set; } = false;
 
         /// <summary>
-        /// Gets ot sets a value indicating wether Attribute is visible
+        /// Gets ot sets a value indicating whether this attribute is visible
         /// </summary>
         [Obsolete("Use ShowOnView instead")]
         public bool IsVisible { get; set; } = true;
 
         /// <summary>
-        /// Gets ot sets a value indicating wether Attribute is visible in a view mode (in grid)
+        /// Gets ot sets a value indicating whether this attribute is visible in a view mode (in grid)
         /// </summary>
         public bool ShowOnView { get; set; } = true;
 
         /// <summary>
-        /// Gets ot sets a value indicating wether Attribute is visible during the edit
+        /// Gets ot sets a value indicating whether this attribute is visible during the edit
         /// </summary>
         public bool ShowOnEdit { get; set; } = true;
 
         /// <summary>
-        /// Gets ot sets a value indicating wether Attribute is visible during the creation
+        /// Gets ot sets a value indicating whether this attribute is visible during the creation
         /// </summary>
         public bool ShowOnCreate { get; set; } = true;
 
@@ -291,7 +291,7 @@ namespace EasyData
         /// Gets the model.
         /// </summary>
         /// <value>The model.</value>
-        public virtual Metadata Model => Entity?.Model;
+        public virtual MetaData Model => Entity?.Model;
 
         public EntityAttrKind Kind { get; internal set; }
 
@@ -688,6 +688,9 @@ namespace EasyData
                 case "ifk":
                     IsForeignKey = (await reader.ReadAsBooleanAsync(ct).ConfigureAwait(false)).Value;
                     break;
+                case "ied":
+                    IsEditable = (await reader.ReadAsBooleanAsync(ct).ConfigureAwait(false)).Value;
+                    break;
                 case "sov":
                     ShowOnView = (await reader.ReadAsBooleanAsync(ct).ConfigureAwait(false)).Value;
                     break;
@@ -776,7 +779,7 @@ namespace EasyData
 
         /// <summary>Gets the DataModel object this entity attribute belongs to</summary>
         /// <value>The model.</value>
-        public Metadata Model
+        public MetaData Model
         {
             get { return _entity != null ? _entity.Model : null; }
         }

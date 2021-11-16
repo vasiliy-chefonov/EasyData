@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
+using EasyData.Services;
 
 namespace EasyData.MetaDescriptors
 {
@@ -10,9 +13,9 @@ namespace EasyData.MetaDescriptors
     public class EntityMetadataDescriptor
     {
         /// <summary>
-        /// Set of entity properties metadata.
+        /// Set of entity attributes metadata.
         /// </summary>
-        public HashSet<EntityPropertyMetadataDescriptor> MetadataProperties { get; private set; } = new HashSet<EntityPropertyMetadataDescriptor>(new PropertyComparer());
+        public HashSet<EntityAttributeMetadataDescriptor> MetadataAttributes { get; } = new HashSet<EntityAttributeMetadataDescriptor>(new AttributeComparer());
 
         /// <summary>
         /// Name to use for this entity in the UI.
@@ -20,7 +23,7 @@ namespace EasyData.MetaDescriptors
         public string DisplayName { get; set; }
 
         /// <summary>
-        /// Plural name to use for this property in the UI.
+        /// Plural name to use in the UI.
         /// </summary>
         public string DisplayNamePlural { get; set; }
 
@@ -35,16 +38,21 @@ namespace EasyData.MetaDescriptors
         public string Description { get; set; }
 
         /// <summary>
+        /// Whether the entity is editable or not.
+        /// </summary>
+        public bool? IsEditable { get; set; }
+
+        /// <summary>
         /// Entity type.
         /// </summary>
         public Type ClrType { get; set; }
 
         /// <summary>
-        /// Compare entity properties metadata.
+        /// Compare entity attributes metadata.
         /// </summary>
-        private class PropertyComparer : IEqualityComparer<EntityPropertyMetadataDescriptor>
+        private class AttributeComparer : IEqualityComparer<EntityAttributeMetadataDescriptor>
         {
-            public bool Equals(EntityPropertyMetadataDescriptor x, EntityPropertyMetadataDescriptor y)
+            public bool Equals(EntityAttributeMetadataDescriptor x, EntityAttributeMetadataDescriptor y)
             {
                 if (x == null || y == null) {
                     return false;
@@ -53,7 +61,7 @@ namespace EasyData.MetaDescriptors
                 return x.PropertyInfo.Equals(y.PropertyInfo);
             }
 
-            public int GetHashCode(EntityPropertyMetadataDescriptor obj)
+            public int GetHashCode(EntityAttributeMetadataDescriptor obj)
             {
                 return obj.PropertyInfo.GetHashCode();
             }

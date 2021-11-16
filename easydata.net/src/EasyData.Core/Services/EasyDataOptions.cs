@@ -34,8 +34,7 @@ namespace EasyData.Services
         /// <summary>
         /// Initializes a new instance of the <see cref="EasyDataOptions"/> class.
         /// </summary>
-        /// <param name="services">The DI services.</param>
-        public EasyDataOptions(IServiceProvider services)
+        public EasyDataOptions()
         {
 
         }
@@ -53,7 +52,7 @@ namespace EasyData.Services
         /// <param name="filterClass">The filter class.</param>
         /// <param name="model">The model</param>
         /// <returns></returns>
-        public EasyFilter ResolveFilter(string filterClass, Metadata model)
+        public EasyFilter ResolveFilter(string filterClass, MetaData model)
         {
             if (!_filterClasses.TryGetValue(filterClass, out var filterType))
                 return null;
@@ -64,12 +63,15 @@ namespace EasyData.Services
         private readonly Dictionary<string, Type> _filterClasses = new Dictionary<string, Type>();
 
         /// <summary>
-        /// 
+        /// Registers filter
         /// </summary>
         /// <param name="filterClass"></param>
         /// <param name="filterType"></param>
         public void RegisterFilter(string filterClass, Type filterType)
         {
+            if (string.IsNullOrEmpty(filterClass))
+                throw new ArgumentException($"Filter class should not be null or empty");
+
             if (!typeof(EasyFilter).IsAssignableFrom(filterType))
                 throw new ArgumentException($"Filter type should be inherited form '{typeof(EasyFilter)}'");
 
@@ -82,43 +84,21 @@ namespace EasyData.Services
         /// <typeparam name="TFilter">The filter type</typeparam>
         /// <param name="filterClass">The filter class name</param>
         public void RegisterFilter<TFilter>(string filterClass) where TFilter : EasyFilter
-        {
-            _filterClasses[filterClass] = typeof(TFilter);
-        }
+            => RegisterFilter(filterClass, typeof(TFilter));
 
         /// <summary>
         /// Gets the model tuner - an action which is called after the model loading and allows to "tune" your model before sending it to the client-side.
         /// </summary>
         /// <value>The model tuner.</value>
-        public Action<Metadata> ModelTuner { get; private set; }
+        public Action<MetaData> ModelTuner { get; private set; }
 
         /// <summary>
         /// Defines the model tuner. See more about the model tuner in <see cref="ModelTuner"/> property description
         /// </summary>
         /// <param name="tuner">The model tuner.</param>
-        public void UseModelTuner(Action<Metadata> tuner)
+        public void UseModelTuner(Action<MetaData> tuner)
         {
             ModelTuner = tuner;
-        }
-
-        /// <summary>
-        /// Entity meta builders.
-        /// </summary>
-        public IEnumerable<IEntityMetaBuilder> EntityMetaBuilders => entityMetaBuilders;
-
-        private List<IEntityMetaBuilder> entityMetaBuilders = new List<IEntityMetaBuilder>();
-
-        /// <summary>
-        /// Set entity meta options.
-        /// </summary>
-        /// <typeparam name="TEntity">Entity type.</typeparam>
-        /// <returns>Entity meta builder instance.</returns>
-        public EntityMetaBuilder<TEntity> Entity<TEntity>()
-        {
-            var entityBuilder = new EntityMetaBuilder<TEntity>();
-
-            entityMetaBuilders.Add(entityBuilder);
-            return entityBuilder;
         }
     }
 }

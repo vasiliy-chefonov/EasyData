@@ -24,13 +24,13 @@ namespace EasyData
             SubEntities = CreateEntityStore();
         }
 
-        protected Metadata _model { get; set; }
+        protected MetaData _model { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="T:Korzh.EasyData.MetaEntity"/> class.
         /// </summary>
         /// <param name="model">The mofrl.</param>
-        protected internal MetaEntity(Metadata model)
+        protected internal MetaEntity(MetaData model)
         {
             _model = model;
             Attributes = CreateEntityAttrStore();
@@ -70,6 +70,11 @@ namespace EasyData
         /// <value>Entity name</value>
         public string NamePlural { get; set; }
 
+        /// <summary>
+        /// Gets ot sets a value indicating whether this entity is editable
+        /// </summary>
+        public bool IsEditable { get; set; } = true;
+
 
         /// <summary>
         /// Gets or sets the type of the entity.
@@ -91,7 +96,7 @@ namespace EasyData
         public string TypeName { get; set; }
 
         /// <summary>
-        /// Gets or sets the index of Entity
+        /// Gets or sets the index of the entity
         /// </summary>
         public int Index { get; set; } = int.MaxValue;
 
@@ -141,7 +146,7 @@ namespace EasyData
         /// Gets the model.
         /// </summary>
         /// <value>The model.</value>
-        public virtual Metadata Model => _model ?? Parent?.Model;
+        public virtual MetaData Model => _model ?? Parent?.Model;
 
         /// <summary>
         /// Called when the entity is inserted into model.
@@ -375,6 +380,11 @@ namespace EasyData
                 await writer.WritePropertyNameAsync("udata", ct).ConfigureAwait(false);
                 await writer.WriteValueAsync(UserData.ToString(), ct).ConfigureAwait(false);
             }
+
+            if (!IsEditable) {
+                await writer.WritePropertyNameAsync("ied", ct).ConfigureAwait(false);
+                await writer.WriteValueAsync(IsEditable, ct).ConfigureAwait(false);
+            }
         }
 
         /// <summary>Reads the entity content from JSON (asynchronous way).</summary>
@@ -439,6 +449,9 @@ namespace EasyData
                 case "udata":
                     UserData = await reader.ReadAsStringAsync(ct).ConfigureAwait(false);
                     break;
+                case "ied":
+                    IsEditable = (await reader.ReadAsBooleanAsync(ct).ConfigureAwait(false)).Value;
+                    break;
                 default:
                     await reader.SkipAsync(ct).ConfigureAwait(false);
                     break;
@@ -493,7 +506,7 @@ namespace EasyData
 
         /// <summary>Gets the model.</summary>
         /// <value>The model.</value>
-        protected Metadata Model => _parentEntity.Model;
+        protected MetaData Model => _parentEntity.Model;
 
         /// <summary>
         /// Inserts an element into the <see cref="T:System.Collections.ObjectModel.Collection`1"/> at the specified index.

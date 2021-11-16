@@ -6,57 +6,57 @@ using System.Text;
 namespace EasyData.MetaDescriptors
 {
     /// <summary>
-    /// Contains metadata information about property in an entity.
+    /// Contains metadata information about attribute in an entity.
     /// </summary>
-    public class EntityPropertyMetadataDescriptor
+    public class EntityAttributeMetadataDescriptor
     {
         /// <summary>
-        /// Whether to include the property in EasyData or not.
+        /// Whether to include the attribute in EasyData or not.
         /// </summary>
         public bool IsEnabled { get; set; } = true;
 
         /// <summary>
-        /// Name to use for this property in the UI.
+        /// Name to use for this attribute in the UI.
         /// </summary>
         public string DisplayName { get; set; }
 
         /// <summary>
-        /// The display format for the property.
+        /// The display format for the attribute.
         /// </summary>
         public string DisplayFormat { get; set; }
 
         /// <summary>
-        /// Detailed description of the property.
+        /// Detailed description of the attribute.
         /// </summary>
         public string Description { get; set; }
 
         /// <summary>
-        /// Define whether the property is editable.
+        /// Define whether the attribute is editable.
         /// </summary>
         public bool? IsEditable { get; set; }
 
         /// <summary>
-        /// The index of the property.
+        /// The index of the attribute.
         /// </summary>
         public int? Index { get; set; }
 
         /// <summary>
-        /// Define whether property is shown in LookUp editor.
+        /// Define whether attribute is shown in LookUp editor.
         /// </summary>
         public bool? ShowInLookup { get; set; }
 
         /// <summary>
-        /// Define whether property is visible in a view mode (in grid).
+        /// Define whether attribute is visible in a view mode (in grid).
         /// </summary>
         public bool? ShowOnView { get; set; }
 
         /// <summary>
-        /// Define whether property is visible during the edit.
+        /// Define whether attribute is visible during the edit.
         /// </summary>
         public bool? ShowOnEdit { get; set; }
 
         /// <summary>
-        /// Define whether property is visible during the creation.
+        /// Define whether attribute is visible during the creation.
         /// </summary>
         public bool? ShowOnCreate { get; set; }
 
@@ -66,7 +66,7 @@ namespace EasyData.MetaDescriptors
         public int? Sorting { get; set; }
 
         /// <summary>
-        /// The property information.
+        /// The attribute information.
         /// </summary>
         public PropertyInfo PropertyInfo { get; set; }
     }

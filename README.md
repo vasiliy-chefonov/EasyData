@@ -163,9 +163,18 @@ It is also possible to use Fluent API to keep all model classes without any addi
 ```c#
 app.UseEndpoints(endpoints => {
     endpoints.MapEasyData(options => {
-        options.UseDbContext<ApplicationDbContext>();
-        options.Entity<Customer>().SetDisplayName("Client").SetDisplayNamePlural("Clients")
-            .Property(c => c.Country).SetDescription("Country where the client lives");
+        options.UseDbContext<ApplicationDbContext>(opts => {
+            opts.UseMetaBuilder(builder => {
+                builder.Entity<Customer>()
+                    .SetDisplayName("Client")
+                    .SetDisplayNamePlural("Clients")
+                    .Property(c => c.Country)
+                        .SetDescription("Country where the client lives");
+
+                builder.Entity<Order>()
+                .     .     .     .     .
+            });
+        });
     });
 });
 ```
@@ -246,7 +255,7 @@ With this format EasyData will show only digits (no grouping by thousands) and w
 
 ## FAQ
 
-__Q:__ **What versions of .NET and ASP.NET (Core) does EasyQuery support?**
+__Q:__ **What versions of .NET and ASP.NET (Core) does EasyData support?**
 
 __A:__ Currently, EasyData supports .NET Core 3.1 and .NET 5 and, obviously, all versions of ASP.NET Core and Entity Framework Core that can work with these versions of .NET (Core). It’s not a great deal to add support for previous versions of .NET Core or even .NET Framework 4.x. If you really need it, please create a [GitHub issue](https://github.com/KorzhCom/EasyData/issues) about that.
 
