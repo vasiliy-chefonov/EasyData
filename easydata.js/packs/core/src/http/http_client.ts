@@ -9,6 +9,24 @@ export class HttpResponseError extends Error {
     }
 }
 
+/**
+ * Store information about instance validation error.
+ */
+export class ValidationError extends Error {
+    constructor(public status: number, message: string, public innerErrors: ValidationErrorInfo[]) {
+        super(message);
+    }
+}
+
+/**
+ * Store info about the validation error for the field.
+ */
+export interface ValidationErrorInfo {
+    message: string;
+    code?: number;
+    field?: string;
+}
+
 export class HttpClient {
     public defaultHeaders: HttpHeaders;
 
@@ -118,7 +136,13 @@ export class HttpClient {
                                 ? `No such endpoint: ${url}`
                                 : responseObj);
 
-                        reject(new HttpResponseError(status, message));
+                        if (!responseObj.hasOwnProperty('errors')) {
+                            reject(new HttpResponseError(status, message));
+                            return;
+                        }
+
+                        const errors: ValidationErrorInfo[] = responseObj.errors as Array<ValidationErrorInfo>;
+                        reject(new ValidationError(status, message, errors));
                     });
     
                     return;

@@ -11,13 +11,14 @@ import { ValidationResult, Validator } from '../validators/validator';
 
 import * as crudUtils from '../utils/utils';
 import { DateTimeValidator } from '../validators/datetime_validator';
+import { ValidationErrorInfo } from '@easydata/core';
 
 export class EntityEditForm {
     private errorsDiv: HTMLElement;
 
     private html: HTMLElement;
 
-    constructor(private context: DataContext) {        
+    constructor(private context: DataContext) {      
     }
 
     private validators: Validator[] = [ new DateTimeValidator() ];
@@ -33,7 +34,6 @@ export class EntityEditForm {
 
     public validate(): boolean {
         this.clearErrors();
-
         const inputs = Array.from(this.html.querySelectorAll<HTMLInputElement | HTMLSelectElement>('input, select'));
         let isValid = true;
         for(const input of inputs) {
@@ -44,22 +44,66 @@ export class EntityEditForm {
 
             const result = this.validateValue(attr, input.value);
             if (!result.successed) {
-                if (isValid) {
-                    domel(this.errorsDiv)
-                        .addChild('ul');
-                }
-
                 isValid = false;
-
-                for(const message of result.messages) {
-                    this.errorsDiv.firstElementChild.innerHTML += `<li>${attr.caption}: ${message}</li>`;
-                }
+                this.showInputErrors(input, result.messages);
             }
             
             this.markInputValid(input, result.successed);
         }
 
         return isValid;
+    }
+
+    /**
+     * Append messages to the error block.
+     */
+    public appendToErrorsBlock(message: string, caption?: string) {
+        if (caption != null) {
+            this.errorsDiv.firstElementChild.innerHTML += `<li>${caption}: ${message}</li>`;
+        }
+        else {
+            this.errorsDiv.firstElementChild.innerHTML += `<li>${message}</li>`;
+        }
+    }
+
+    /**
+     * Show validation errors for input elements.
+     */
+    public showInputErrors(input: HTMLInputElement | HTMLSelectElement, messages: string[]) {
+        messages.forEach(message => {
+            const error = document.createElement('div');
+            const text = document.createElement('small');
+            domel(text).addText(message);
+            error.appendChild(text);
+            error.style.color = 'red';
+            error.classList.add('error-message');
+            input.parentElement.appendChild(error);
+        });
+    }
+
+    /**
+     * Show validation errors.
+     */
+    public showValidationErrors(errors: ValidationErrorInfo[]) {
+        this.clearErrors();
+        domel(this.errorsDiv).addChild('ul');
+
+        for(let error of errors) {
+            if (error.field == null) {
+                this.appendToErrorsBlock(error.message);
+                continue;
+            }
+
+            const input = this.html.querySelector<HTMLInputElement | HTMLSelectElement>(`[name$='.${error.field}']`);
+
+            if (input != null) {
+                this.showInputErrors(input, [error.message]);
+                this.markInputValid(input, false);
+            }
+            else {
+                this.appendToErrorsBlock(error.message, error.field);
+            }
+        }
     }
 
     public getData(): Promise<any> {
@@ -138,6 +182,7 @@ export class EntityEditForm {
         this.html.querySelectorAll('input, select').forEach(el => {
             el.classList.remove('is-valid');
             el.classList.remove('is-invalid');
+            this.html.querySelectorAll('.error-message').forEach(el => el.remove());
         });
     }
 

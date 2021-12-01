@@ -1,4 +1,4 @@
-import { DataRow, i18n, utils as dataUtils } from '@easydata/core';
+import { DataRow, i18n, utils as dataUtils, ValidationError } from '@easydata/core';
 
 import { 
     DefaultDialogService, 
@@ -15,6 +15,7 @@ import { TypeValidator } from '../validators/type_validator';
 import { Validator } from '../validators/validator';
 import { EasyDataViewOptions } from './options';
 import { setLocation } from '../utils/utils';
+import { EntityEditForm } from 'src/form/entity_edit_form';
 
 export class EntityDataView {
 
@@ -144,18 +145,20 @@ export class EntityDataView {
                 .replace('{entity}', activeEntity.caption),
             body: form.getHtml(),
             onSubmit: () => {
-
                 if (!form.validate())
                     return false;
                       
                 form.getData()
                 .then(obj => this.context.createEntity(obj))
                 .then(() => {
+                    this.dlg.closeAllDialogs();
                     return this.refreshData();
                 })
                 .catch((error) => {
-                    this.processError(error);
+                    this.processError(error, form);
                 });
+
+                return false;
             }
         });
     }
@@ -192,11 +195,14 @@ export class EntityDataView {
                 form.getData()
                 .then(obj => this.context.updateEntity(keys.join(':'), obj))
                 .then(() => {
+                    this.dlg.closeAllDialogs();
                     return this.refreshData();
                 })       
                 .catch((error) => {
-                   this.processError(error);
+                   this.processError(error, form);
                 });
+
+                return false;
             }
         })
     }
@@ -238,10 +244,17 @@ export class EntityDataView {
             });
     }
 
-    private processError(error) {
+    private processError(error: Error | ValidationError, form?: EntityEditForm) {
+        let message = error.message;
+
+        if ('innerErrors' in error && form != null) {
+            form.showValidationErrors(error.innerErrors);
+            return;
+        }
+
         this.dlg.open({
             title: 'Ooops, something went wrong',
-            body: error.message,
+            body: message,
             closable: true,
             cancelable: false
         });
