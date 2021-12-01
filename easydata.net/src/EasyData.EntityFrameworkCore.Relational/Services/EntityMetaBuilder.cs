@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using EasyData.MetaDescriptors;
+using EasyData.Services;
 
 namespace EasyData.EntityFrameworkCore.Services
 {
@@ -17,6 +18,11 @@ namespace EasyData.EntityFrameworkCore.Services
 
         /// <inheritdoc />
         public Type ClrType => typeof(T);
+
+        /// <summary>
+        /// Entity instance validator.
+        /// </summary>
+        public Validator<T> Validator { get; private set; }
 
         /// <summary>
         /// Initialize entity metadata descriptor.
@@ -81,6 +87,28 @@ namespace EasyData.EntityFrameworkCore.Services
         public EntityMetaBuilder<T> SetEditable(bool editable)
         {
             EntityMetadataDescriptor.IsEditable = editable;
+            return this;
+        }
+
+        /// <summary>
+        /// Set entity validator.
+        /// </summary>
+        /// <param name="validator">Validation action.</param>
+        /// <returns>Current instance of the class.</returns>
+        public EntityMetaBuilder<T> SetValidator(Action<T> validator)
+        {
+            Validator = new PredefinedValidator<T>(validator);
+            return this;
+        }
+
+        /// <summary>
+        /// Set entity validator.
+        /// </summary>
+        /// <param name="validator"><see cref="Validator{T}" /> instance.</param>
+        /// <returns>Current instance of the class.</returns>
+        public EntityMetaBuilder<T> SetValidator(Validator<T> validator)
+        {
+            Validator = validator;
             return this;
         }
 

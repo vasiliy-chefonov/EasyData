@@ -11,6 +11,9 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Newtonsoft.Json.Linq;
 
 using EasyData.EntityFrameworkCore;
+using EasyData.EntityFrameworkCore.Services;
+using EasyData.Exceptions;
+
 namespace EasyData.Services
 {
     public class EasyDataManagerEF<TDbContext> : EasyDataManager where TDbContext : DbContext
@@ -126,6 +129,7 @@ namespace EasyData.Services
             var entity = Activator.CreateInstance(entityType.ClrType);
 
             MapProperties(entity, props);
+            ValidateEntity(entity, entityType.ClrType);
 
             await DbContext.AddAsync(entity, ct);
             await DbContext.SaveChangesAsync(ct);
@@ -306,6 +310,44 @@ namespace EasyData.Services
                 query = (IQueryable<T>)filter.Apply(entity, isLookup, query);
             }
             return await query.LongCountAsync(ct);
+        }
+
+        /// <summary>
+        /// Validate entity instance.
+        /// </summary>
+        /// <param name="instance">Instance to validate.</param>
+        /// <param name="entityType">Type of the entity.</param>
+        private void ValidateEntity(object instance, Type entityType)
+        {
+            var parameters = new[] { instance, null, null };
+
+            // Get loader options.
+            var loaderOptions = new DbContextMetaDataLoaderOptions();
+            Options.MetaDataLoaderOptionsBuilder?.Invoke(loaderOptions);
+
+            // Check if custom validator was set in options.
+            var entityMetaBuilder = loaderOptions.MetadataBuilder.EntityMetaBuilders
+                .FirstOrDefault(e => e.ClrType == entityType);
+
+            if (entityMetaBuilder != null) {
+                var genericType = typeof(EntityMetaBuilder<>).MakeGenericType(entityType);
+                parameters[2] = genericType.GetProperty("Validator").GetValue(entityMetaBuilder, null);
+            }
+
+            var validate = typeof(EasyDataManager).GetMethod(nameof(TryValidate));
+
+            if (validate == null) {
+                return;
+            }
+
+            var isValid = validate.MakeGenericMethod(entityType).Invoke(this, parameters);
+
+            if (isValid == null || (bool)isValid) {
+                return;
+            }
+
+            var errors = (List<ValidationErrorInfo>) parameters[1];
+            throw new EntityValidationException($"An error occurred during {entityType} validation", errors);
         }
     }
 }

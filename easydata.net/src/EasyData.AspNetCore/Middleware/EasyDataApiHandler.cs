@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
+using EasyData.Exceptions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 
@@ -236,11 +237,18 @@ namespace EasyData.AspNetCore
 
             HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
 
-            if (ex is ContainerNotFoundException || ex is EntityNotFoundException)
-                HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+            switch (ex)
+            {
+                case ContainerNotFoundException _:
+                case EntityNotFoundException _:
+                    HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+                    break;
+                case EntityValidationException validationException:
+                    await WriteValidationErrorJsonResponseAsync(HttpContext, validationException, ct);
+                    return;
+            }
 
             await WriteErrorJsonResponseAsync(HttpContext, ex.InnerException?.Message ?? ex.Message, ct);
-            return;
         }
 
 
@@ -296,6 +304,32 @@ namespace EasyData.AspNetCore
             await WriteJsonResponseAsync(context, "error", async (jsonWriter, cancellationToken) => {
                 await jsonWriter.WritePropertyNameAsync("message", cancellationToken);
                 await jsonWriter.WriteValueAsync(errorMessage, cancellationToken);
+            }, ct);
+        }
+
+        /// <summary>
+        /// Writes a validation error response in JSON format.
+        /// </summary>
+        /// <param name="context">The HTTP context.</param>
+        /// <param name="validationException">Validation exception.</param>
+        /// <param name="ct">Cancellation token.</param>
+        protected static async Task WriteValidationErrorJsonResponseAsync(HttpContext context,
+            EntityValidationException validationException, CancellationToken ct)
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+
+            await WriteJsonResponseAsync(context, "error", async (jsonWriter, cancellationToken) => {
+                await jsonWriter.WritePropertyNameAsync("message", cancellationToken);
+                await jsonWriter.WriteValueAsync(validationException.Message, cancellationToken);
+                await jsonWriter.WritePropertyNameAsync("errors", cancellationToken);
+                await jsonWriter.WriteStartArrayAsync(cancellationToken);
+
+                foreach (var jObj in validationException.Errors.Select(JObject.FromObject))
+                {
+                    await jObj.WriteToAsync(jsonWriter, ct);
+                }
+
+                await jsonWriter.WriteEndArrayAsync(cancellationToken);
             }, ct);
         }
     }

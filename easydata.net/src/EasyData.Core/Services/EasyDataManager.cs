@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
+using EasyData.Exceptions;
 using Newtonsoft.Json.Linq;
 
 namespace EasyData.Services
@@ -69,6 +69,21 @@ namespace EasyData.Services
             bool isLookup = false,
             int? offset = null, int? fetch = null,
             CancellationToken ct = default);
+
+        /// <summary>
+        /// Try to validate entity instance.
+        /// </summary>
+        /// <typeparam name="T">Type of the entity.</typeparam>
+        /// <param name="instance">Instance to validate.</param>
+        /// <param name="validationErrors">Validation errors collection.</param>
+        /// <param name="validator">Validator instance.</param>
+        /// <returns>If there are errors during validation.</returns>
+        public bool TryValidate<T>(T instance, out IEnumerable<ValidationErrorInfo> validationErrors,
+            Validator<T> validator = null)
+        {
+            var validationService = new EntityValidationService<T>(Services, validator);
+            return validationService.TryValidate(instance, out validationErrors);
+        }
 
         public abstract Task<long> GetTotalEntitiesAsync(string modelId, string entityContainer, IEnumerable<EasyFilter> filters = null, bool isLookup = false, CancellationToken ct = default);
 
